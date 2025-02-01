@@ -34,11 +34,11 @@ def main(lot_subject=None):
 
 if __name__ == '__main__':
     # TEST
-    # main(
-    #     lot_subject=[
-    #         'Астраханская область'
-    #     ]
-    # )
+    main(
+        lot_subject=[
+            'Алтайский край'
+        ]
+    )
     
     # PROD
     ## 1. 
@@ -49,4 +49,4 @@ if __name__ == '__main__':
     #     time.sleep(10)
 
     ## 2.
-    main()
+    # main()

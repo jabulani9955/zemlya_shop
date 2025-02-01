@@ -187,17 +187,26 @@ def fill_area(character):
 def get_coords_from_cadastral_number(cad_num: str) -> tuple: 
     url = f"https://nspd.gov.ru/api/geoportal/v2/search/geoportal?query={cad_num}"
     try:
-        data_coordinates = requests.get(url, verify=False).json()
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36",
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
+            "Accept-Language": "ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7",
+            "Referer": "https://nspd.gov.ru/",
+            "Connection": "keep-alive"
+        }
+        session = requests.Session()
+        session.headers.update(headers)
+        data_coordinates = session.get(url, verify=False, headers=headers).json()
 
         if 'data' not in data_coordinates.keys():
             return np.nan
         
-        data_features = data_coordinates['data'].get('features')[0]
+        data_features = next(df for df in data_coordinates['data'].get('features') if 'readable_address' in df.get('properties').get('options'))
 
-        polygon_type = data_features.get('geometry', np.nan).get('type', np.nan)
-        coords = data_features.get('geometry', np.nan).get('coordinates', np.nan)
-        address = data_features.get('properties', np.nan).get('options', np.nan).get('readable_address', np.nan)
-        epsg = data_features.get('geometry', np.nan).get('crs', np.nan).get('properties', np.nan).get('name', np.nan)
+        polygon_type = data_features.get('geometry').get('type')
+        coords = data_features.get('geometry').get('coordinates')
+        address = data_features.get('properties').get('options').get('readable_address')
+        epsg = data_features.get('geometry').get('crs').get('properties').get('name')
 
         transformer = Transformer.from_crs(epsg, "EPSG:4326", always_xy=True)
 
@@ -206,6 +215,8 @@ def get_coords_from_cadastral_number(cad_num: str) -> tuple:
             polygon = Polygon(converted_coords)
         elif polygon_type == 'MultiPolygon':
             polygon = MultiPolygon([Polygon([transformer.transform(x, y) for coord_part in coords for ring in coord_part for x, y in ring])])
+        elif polygon_type == 'Point':
+            polygon = Point(transformer.transform(*coords))
         else:
             logger.error(f'Ошибка! Неизвестный тип полигона "{polygon_type}" с кадастровым номером {cad_num}.')
             return np.nan
