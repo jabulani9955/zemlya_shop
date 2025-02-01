@@ -189,25 +189,26 @@ def get_coords_from_cadastral_number(cad_num: str) -> tuple:
     try:
         headers = {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36",
-            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
+            "Accept": "application/json, text/javascript, */*; q=0.01",
             "Accept-Language": "ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7",
             "Referer": "https://nspd.gov.ru/",
             "Connection": "keep-alive"
         }
         session = requests.Session()
         session.headers.update(headers)
-
+        
+        # Предварительный запрос к главной странице для получения cookies
+        homepage_response = session.get("https://nspd.gov.ru/", verify=False)
+        logger.info(f"Главная страница: статус {homepage_response.status_code}")
+        
+        # Теперь запрос к API
         response = session.get(url, verify=False)
         if response.status_code != 200:
             logger.error(f"Ошибка запроса: статус {response.status_code}. Текст ответа: {response.text}")
             return np.nan
-        try:
-            data_coordinates = response.json()
-        except Exception as e:
-            logger.error(f"Ошибка при декодировании JSON: {e}. Текст ответа: {response.text}")
-            return np.nan
+        
+        data_coordinates = response.json()
 
-        # data_coordinates = session.get(url, verify=False).json()
 
         if 'data' not in data_coordinates.keys():
             return np.nan
