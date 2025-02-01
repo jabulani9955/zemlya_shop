@@ -13,7 +13,7 @@ import requests
 # import psycopg2
 from pyproj import Transformer
 from folium.plugins import MarkerCluster, GroupedLayerControl
-from rosreestr2coord import Area
+# from rosreestr2coord import Area
 # from shapely import wkb
 from shapely.geometry import Polygon, MultiPolygon, Point
 from dotenv import load_dotenv

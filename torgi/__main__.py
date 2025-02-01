@@ -33,21 +33,20 @@ def main(lot_subject=None):
 
 
 if __name__ == '__main__':
-    # main()
-
     # TEST
-    main(
-        lot_subject=[
-            'Астраханская область'
-            # 'Омская область', 
-            # 'Оренбургская область', 
-            # 'Республика Хакасия'
-        ]
-    )
+    # main(
+    #     lot_subject=[
+    #         'Астраханская область'
+    #     ]
+    # )
     
     # PROD
+    ## 1. 
+
     # schedule.every().day.at('04:00').do(main)
-    
     # while True:
     #     schedule.run_pending()
     #     time.sleep(10)
+
+    ## 2.
+    main()
