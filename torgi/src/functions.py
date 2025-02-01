@@ -196,7 +196,18 @@ def get_coords_from_cadastral_number(cad_num: str) -> tuple:
         }
         session = requests.Session()
         session.headers.update(headers)
-        data_coordinates = session.get(url, verify=False, headers=headers).json()
+
+        response = session.get(url, verify=False)
+        if response.status_code != 200:
+            logger.error(f"Ошибка запроса: статус {response.status_code}. Текст ответа: {response.text}")
+            return np.nan
+        try:
+            data_coordinates = response.json()
+        except Exception as e:
+            logger.error(f"Ошибка при декодировании JSON: {e}. Текст ответа: {response.text}")
+            return np.nan
+
+        # data_coordinates = session.get(url, verify=False).json()
 
         if 'data' not in data_coordinates.keys():
             return np.nan
